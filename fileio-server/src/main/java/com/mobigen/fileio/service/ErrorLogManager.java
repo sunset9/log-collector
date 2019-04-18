@@ -20,7 +20,7 @@ public class ErrorLogManager {
         try{
             if(errorLogs != null && errorLogs.size() >0){
                 logger.error("---------- 에러난 로그 개수:" + errorLogs.size() + "---------- ");
-                logger.error(e.getMessage());
+                logger.error(e.getMessage(), e);
                 for(String log: errorLogs){
                     logger.error(log);
                 }

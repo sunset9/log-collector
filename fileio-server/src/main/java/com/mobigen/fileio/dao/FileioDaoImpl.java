@@ -1,8 +1,10 @@
 package com.mobigen.fileio.dao;
 
 
+import com.mobigen.fileio.service.DBUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -14,36 +16,48 @@ import java.util.List;
 public class FileioDaoImpl implements FileioDao {
     Logger logger = LoggerFactory.getLogger(FileioDaoImpl.class);
 
-    @Value("${insert.fetchSize}")
+    @Autowired
+    DBUtil dbUtil;
+    @Value("${jdbc.fetchSize}")
     int BATCH_SIZE;
+    @Value("${jdbc.statementTimeout}")
+    int ST_TIMEOUT;
+
+
 
     /**
      * 쿼리 수행 메소드
      *
-     * @param conn
      * @param sqls
      * @return
      */
     @Override
-    public Boolean executeQuery(Connection conn, List<String> sqls) {
+    public Boolean executeQuery(List<String> sqls) {
         Boolean isSucc = false;
 
         Statement stmt = null;
-        try{
+
+        long start = System.currentTimeMillis();
+        try {
+            logger.info("DB 작업 시작");
+            Connection conn = dbUtil.getConnection();
+
             stmt = conn.createStatement();
             stmt.setFetchSize(BATCH_SIZE);
+            stmt.setQueryTimeout(ST_TIMEOUT);
 
             // 쿼리 실행
             for(String sql : sqls){
-                if(Thread.currentThread().isInterrupted()) throw new Exception("interrupted");
                 stmt.addBatch(String.valueOf(sql));
             }
 
             stmt.executeBatch();
 
+            dbUtil.commit();
             isSucc = true;
         } catch (Exception e){
             logger.error("DB 쿼리 수행 실패", e);
+            dbUtil.rollback();
             isSucc = false;
         } finally {
             try {
@@ -52,6 +66,9 @@ public class FileioDaoImpl implements FileioDao {
                 logger.error("Error", e);
             }
         }
+
+        long end = System.currentTimeMillis();
+        logger.info("DB 작업 시간: " + (float)(end - start)/1000 + "초");
 
         return isSucc;
     }
