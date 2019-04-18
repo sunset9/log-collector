@@ -19,11 +19,7 @@ public class DBProcessor {
 
     @Value("${bulk.batchSize}")
     int BATCH_SIZE;
-    @Value("${insert.timeoutSecond}")
-    int timeout;
 
-    @Autowired
-    DBUtil dbUtil;
     @Autowired
     FileioDaoImpl fDao;
 
@@ -42,7 +38,7 @@ public class DBProcessor {
 
             // DB 처리
             if(sqls.size() > 0){
-                isSucc = insertToDb(sqls);
+                isSucc = fDao.executeQuery(sqls);
             }
 
         } catch (Exception e){
@@ -127,56 +123,5 @@ public class DBProcessor {
         return sqls;
     }
 
-    /**
-     * DB insert 수행 메소드
-     *
-     * @param sqls
-     * @return
-     */
-    private boolean insertToDb(List<String> sqls) {
-        logger.info("DB작업 시작");
-
-        Boolean isSucc = false;
-        Future<Boolean> future = null;
-        Connection conn = null;
-
-        long dbstart = System.currentTimeMillis();
-
-        try {
-            conn = dbUtil.getConnection();
-
-            // DB 작업 시작
-            Connection connTemp = conn;
-            future = Executors.newCachedThreadPool().submit(()
-                    -> fDao.executeQuery(connTemp, sqls));
-
-            // 타임아웃 설정
-            if(timeout > 0 ) isSucc = future.get(timeout, TimeUnit.SECONDS);
-            else isSucc = future.get();
-
-        } catch (TimeoutException te){
-            logger.error("DB 작업 시간초과");
-            future.cancel(true);
-            isSucc = false;
-        } catch (Exception e) {
-            logger.error("DB 작업 실패", e);
-            isSucc = false;
-
-        } finally {
-            try {
-                if(isSucc) dbUtil.commit(conn);
-                else dbUtil.rollback(conn);
-
-            } catch (Exception e) {
-                logger.error("DB 트랜잭션 실패", e);
-                isSucc = false;
-            }
-
-            long dbTime = System.currentTimeMillis() - dbstart;
-            logger.info("DB 작업 시간: " + (float) dbTime / 1000 + "초");
-        }
-
-        return isSucc;
-    }
 }
 

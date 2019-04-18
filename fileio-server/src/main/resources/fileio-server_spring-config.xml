@@ -9,21 +9,21 @@
     <context:component-scan base-package="com.mobigen.fileio" />
 
     <!-- DB 접속 정보 -->
-    <!--<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">-->
-        <!--<property name="driverClassName" value="${jdbc.driver}" />-->
-        <!--<property name="url" value="${jdbc.url}" />-->
-        <!--<property name="username" value="${jdbc.username}" />-->
-        <!--<property name="password" value="${jdbc.password}" />-->
-    <!--</bean>-->
-
-    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
-        <property name="driverClass" value="${jdbc.driver}" />
-        <property name="jdbcUrl" value="${jdbc.url}" />
-        <property name="user" value="${jdbc.username}" />
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.driver}" />
+        <property name="url" value="${jdbc.url}" />
+        <property name="username" value="${jdbc.username}" />
         <property name="password" value="${jdbc.password}" />
-        <property name="initialPoolSize" value="10" />
-        <property name="maxPoolSize" value="80" />
-        <property name="maxIdleTime" value="1800" />
     </bean>
+
+    <!--<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">-->
+        <!--<property name="driverClass" value="${jdbc.driver}" />-->
+        <!--<property name="jdbcUrl" value="${jdbc.url}" />-->
+        <!--<property name="user" value="${jdbc.username}" />-->
+        <!--<property name="password" value="${jdbc.password}" />-->
+        <!--<property name="initialPoolSize" value="5" />-->
+        <!--<property name="maxPoolSize" value="15" />-->
+        <!--<property name="maxIdleTime" value="1800" />-->
+    <!--</bean>-->
 
 </beans>

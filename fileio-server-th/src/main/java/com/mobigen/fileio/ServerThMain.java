@@ -9,19 +9,19 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ServerMain {
+public class ServerThMain {
     @Autowired
     private LogCollector logCollector;
 
     public static void main(String[] args) {
-        ApplicationContext ctx = new ClassPathXmlApplicationContext("/fileio-server_spring-config.xml");
-        ServerMain main = ctx.getBean(ServerMain.class);
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("/fileio-server-th_spring-config.xml");
+        ServerThMain main = ctx.getBean(ServerThMain.class);
 
         main.start();
     }
 
     private void start(){
-        Logger logger = LoggerFactory.getLogger(ServerMain.class);
+        Logger logger = LoggerFactory.getLogger(ServerThMain.class);
         try {
             logger.info("서버 실행");
             logCollector.start();
