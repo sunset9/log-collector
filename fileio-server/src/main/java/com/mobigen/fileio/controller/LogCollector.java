@@ -57,6 +57,7 @@ public class LogCollector {
                     // 최근 작업 시간 기록
                     recentProcTime = System.currentTimeMillis();
                     logger.info("---------- 처리 시작 : " + logBuffer.size() +" 개 ---------");
+                    long procStart = System.currentTimeMillis();
 
                     // 파싱
                     List<FileLog> parsedLogs = logParser.getParsedLogs(logBuffer);
@@ -65,6 +66,8 @@ public class LogCollector {
                         isSuccProcess = dbProcessor.insertLogs(parsedLogs);
                     }
 
+                    long procEnd = System.currentTimeMillis();
+                    logger.info("총 처리 시간: " + (float)(procEnd - procStart)/1000 + "초");
                     if(isSuccProcess){
                         logger.info("------------ 처리 완료 -----------");
                         // 초기화

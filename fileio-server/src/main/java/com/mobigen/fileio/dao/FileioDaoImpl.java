@@ -43,7 +43,7 @@ public class FileioDaoImpl implements FileioDao {
 
             isSucc = true;
         } catch (Exception e){
-            logger.error("DB 쿼리 수행 실패");
+            logger.error("DB 쿼리 수행 실패", e);
             isSucc = false;
         } finally {
             try {

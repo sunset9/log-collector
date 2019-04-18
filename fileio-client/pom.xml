@@ -9,9 +9,6 @@
         <groupId>com.mobigen</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <!--<groupId>com.mobigen</groupId>-->
-    <!--<artifactId>fileio-client</artifactId>-->
-    <!--<version>1.0-SNAPSHOT</version>-->
 
     <artifactId>fileio-client</artifactId>
     <properties>

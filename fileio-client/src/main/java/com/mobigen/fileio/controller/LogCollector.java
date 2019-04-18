@@ -286,9 +286,9 @@ public class LogCollector {
         List<String> filteredLog = new ArrayList<>();
 
         try {
-            logger.info("필터링 시작");
 
             if(logs != null && logs.size() > 0){
+                logger.info("필터링 시작");
                 /*
                 final Pattern pattern = Pattern.compile("^.*(SUCCESS|CDB).*$");
                 long start = System.currentTimeMillis();

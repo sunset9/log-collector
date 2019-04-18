@@ -32,7 +32,9 @@ public class LogParser {
         List<FileLog> succLogs = new LinkedList<>() ;
         List<FileLog> cdbLogs = new LinkedList<>() ;
 
+        long parseStart = System.currentTimeMillis();
         try {
+
             // 현재 년도 구하기
             int year = Calendar.getInstance().get(Calendar.YEAR);
 
@@ -91,6 +93,8 @@ public class LogParser {
             resLogs.clear();
         }
 
+        long parseEnd = System.currentTimeMillis();
+        logger.info("파싱 처리 시간: " + (float)(parseEnd - parseStart)/1000 + "초");
         return resLogs;
     }
 
@@ -105,7 +109,7 @@ public class LogParser {
      * @return
      */
 //    Format fm = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss");
-    private String getFormatedDate(String dateOri) {
+    private String getFormatedDate(String dateOri) throws ParseException {
         String resDate = null;
 
         try {
@@ -114,8 +118,8 @@ public class LogParser {
             // Date -> String
             resDate = fm.format(date);
 
-        } catch (ParseException e) {
-            logger.error("파싱 실패", e);
+        } catch (Exception e) {
+            throw e;
         }
 
         return resDate;
