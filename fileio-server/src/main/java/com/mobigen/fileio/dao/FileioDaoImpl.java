@@ -18,10 +18,12 @@ public class FileioDaoImpl implements FileioDao {
 
     @Autowired
     DBUtil dbUtil;
-    @Value("${insert.fetchSize}")
+    @Value("${jdbc.fetchSize}")
     int BATCH_SIZE;
-    @Value("${insert.timeoutSecond}")
-    int TIMEOUT;
+    @Value("${jdbc.statementTimeout}")
+    int ST_TIMEOUT;
+
+
 
     /**
      * 쿼리 수행 메소드
@@ -42,7 +44,7 @@ public class FileioDaoImpl implements FileioDao {
 
             stmt = conn.createStatement();
             stmt.setFetchSize(BATCH_SIZE);
-            stmt.setQueryTimeout(TIMEOUT);
+            stmt.setQueryTimeout(ST_TIMEOUT);
 
             // 쿼리 실행
             for(String sql : sqls){
