@@ -118,7 +118,7 @@ public class LogParser {
             // Date -> String
             resDate = fm.format(date);
 
-        } catch (Exception e) {
+        } catch (ParseException e) {
             throw e;
         }
 

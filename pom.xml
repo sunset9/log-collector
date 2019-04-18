@@ -12,6 +12,7 @@
     <modules>
         <module>fileio-client</module>
         <module>fileio-server</module>
+        <module>fileio-server-th</module>
     </modules>
 
     <build>

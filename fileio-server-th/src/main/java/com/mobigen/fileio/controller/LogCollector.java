@@ -1,15 +1,18 @@
 package com.mobigen.fileio.controller;
 
+import com.mobigen.fileio.config.LogProcConfig;
 import com.mobigen.fileio.dto.FileLog;
 import com.mobigen.fileio.service.DBProcessor;
 import com.mobigen.fileio.service.ErrorLogManager;
 import com.mobigen.fileio.service.LogParser;
+import com.mobigen.fileio.service.LogProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 
+import javax.annotation.Resource;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,9 +23,9 @@ public class LogCollector {
     @Autowired
     private KConsumer kafkaConsumer;
     @Autowired
-    private LogParser logParser;
+    LogProcConfig logProcConfig;
     @Autowired
-    private DBProcessor dbProcessor;
+    LogProcessor logProcessor;
     @Autowired
     private ErrorLogManager errorLogManager;
 
@@ -32,17 +35,14 @@ public class LogCollector {
     private int timeLimit;
 
     private static List<String> logBuffer;
-    private static Long recentProcTime;
-
+    private static Long recentProcTime = 0L;
 
     public void start() {
         logger.info("로그 수집기 시작");
 
         logBuffer = new LinkedList<>();
-        recentProcTime = System.currentTimeMillis();
 
         while(true){
-            boolean isSuccProcess = true;
 
             try{
                 // 카푸카 메세지 읽기
@@ -50,45 +50,33 @@ public class LogCollector {
                 // 버퍼에 담기
                 logBuffer.addAll(readLogs);
 
+//                logger.info("현재 버퍼 사이즈: " + logBuffer.size());
                 // 버퍼가 차거나 일정 시간 지나면 버퍼 처리
                 if(logBuffer.size() >= buffSize || (!isRecentProc() && logBuffer.size() > 0)){
-                    isSuccProcess = false;
 
                     // 최근 작업 시간 기록
                     recentProcTime = System.currentTimeMillis();
-                    logger.info("---------- 처리 시작 : " + logBuffer.size() +" 개 ---------");
-                    long procStart = System.currentTimeMillis();
 
-                    // 파싱
-                    List<FileLog> parsedLogs = logParser.getParsedLogs(logBuffer);
-                    // DB작업
-                    if(parsedLogs.size() > 0){
-                        isSuccProcess = dbProcessor.insertLogs(parsedLogs);
+                    // 스레드 등록 가능 여부 체크
+                    if(logProcConfig.isTaskExecute()){
+                        logProcessor.processLog(logBuffer);
+                    } else {
+                        logger.info("처리 스레드 등록 개수 초과");
                     }
 
-                    long procEnd = System.currentTimeMillis();
-                    logger.info("총 처리 시간: " + (float)(procEnd - procStart)/1000 + "초");
-                    if(isSuccProcess){
-                        logger.info("------------ 처리 완료 -----------");
-                        // 초기화
-                        logBuffer = new LinkedList<>();
-                    } else { logger.info("------------ 처리 실패 -----------"); }
+                    // 초기화
+                    logBuffer = new LinkedList<>();
+
+                    logger.info("버퍼 처리 작업 완료");
                 }
 
             } catch (Exception e){
-                logger.error("로그 수집 및 처리 실패", e);
+                logger.error("로그 수집 실패", e);
 
                 // 실패한 경우 에러 로그 기록
                 errorLogManager.writeErrorLog(e, logBuffer);
                 // 초기화
                 logBuffer = new LinkedList<>();
-
-            } finally {
-                if(!isSuccProcess){
-                    errorLogManager.writeErrorLog(new Exception("로그 처리 작업 실패"), logBuffer);
-                    // 초기화
-                    logBuffer = new LinkedList<>();
-                }
             }
         }
     }
