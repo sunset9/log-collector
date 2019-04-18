@@ -48,11 +48,30 @@ public class LogCollector {
         try {
             File targetFile = new File(dirPath + "/" + fileName);
 
-            // ------------ 기존파일 처리 --------------
+            // ------------ 기존파일 내용 처리 --------------
+            proccessOldContent(targetFile);
+
+            // ------------ 새로 추가된 내용 처리 --------------
+            watchNewContent(targetFile);
+
+        } catch (Exception e){
+            logger.error("LogCollector service Error", e);
+        }
+    }
+
+    /**
+     * 기존에 작성된 내용 처리 메소드
+     *
+     * @param targetFile
+     * @return
+     */
+    private void proccessOldContent(File targetFile){
+
+        try{
             // 파일 존재 검사
             if(!targetFile.exists()){
                 logger.error("작업할 파일이 존재하지 않습니다.");
-                return;
+                return ;
             }
 
             PosInfo posInfo = posFileManager.getStoredPos();
@@ -79,21 +98,18 @@ public class LogCollector {
             if (filteredLog.size() > 0) kafkaProducer.send(filteredLog);
 
 
-            // ------------ 새로 추가된 내용 처리 --------------
-            startWatch(targetFile);
-
         } catch (Exception e){
-            logger.error("LogCollector service Error", e);
+            logger.error("기존 파일 처리 실패", e);
         }
-    }
 
+    }
 
     /**
      * 새로운 파일 수정 감시 메소드
      *
      * @param targetFile
      */
-    private void startWatch(File targetFile){
+    private void watchNewContent(File targetFile){
         PosInfo curPosInfo = null;
         WatchService watchService = null;
         WatchKey watchKey;
@@ -201,7 +217,7 @@ public class LogCollector {
             logger.info("10초 후 재실행");
             try {
                 Thread.sleep(10 * 1000);
-                startWatch(targetFile);
+                watchNewContent(targetFile);
             } catch (InterruptedException e1) {
                 logger.error("재실행 실패", e1);
             }
